@@ -4,16 +4,9 @@ from logging.handlers import RotatingFileHandler
 
 from pwm import pwm
 from monitor import monitor
+from curve import get_duty_cycle
 import time
 import datetime
-
-
-def get_duty_cycle(temp):
-
-    if temp > 65:
-        return 100
-
-    return int(temp)
 
 
 def update(pwm, monitor):
