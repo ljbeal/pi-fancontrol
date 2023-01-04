@@ -1,0 +1,4 @@
+*.log*
+.idea/
+sync_with_nas.sh
+*__pycache__*
