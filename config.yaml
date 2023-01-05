@@ -1,5 +1,5 @@
 main_fan:
-  pin: 18
+  pin: 12
   curve:
     30: 10
     70: 65
