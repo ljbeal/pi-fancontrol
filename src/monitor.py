@@ -1,4 +1,6 @@
 import logging
+import os
+
 import yaml
 from logging.handlers import RotatingFileHandler
 
@@ -15,7 +17,7 @@ class MainBoard:
         self._logger = logging.getLogger("temps")
         self._logger.setLevel(logging.DEBUG)
 
-        handler = RotatingFileHandler('$HOME/fancontrol/temps.log',
+        handler = RotatingFileHandler(f'{os.environ["HOME"]}/fancontrol/temps.log',
                                       maxBytes=102400,
                                       backupCount=2)
         self._logger.addHandler(handler)

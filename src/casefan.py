@@ -1,5 +1,6 @@
 import bisect
 import logging
+import os
 
 try:
     import RPi.GPIO as GPIO
@@ -22,7 +23,7 @@ class CaseFan:
         self._logger = logging.getLogger(f"fan-{pin}")
         self._logger.setLevel(logging.DEBUG)
 
-        handler = logging.FileHandler('$HOME/fancontrol/fans.log')
+        handler = logging.FileHandler(f'{os.environ["HOME"]}/fancontrol/fans.log')
         self._logger.addHandler(handler)
 
         if curve is None:
