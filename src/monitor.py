@@ -2,7 +2,7 @@ import logging
 import yaml
 from logging.handlers import RotatingFileHandler
 
-from src.casefan import CaseFan
+from casefan import CaseFan
 
 
 class MainBoard:
