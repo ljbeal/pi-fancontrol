@@ -1,7 +1,10 @@
 import bisect
 import logging
 
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except ImportError:
+    GPIO = None
 
 
 class CaseFan:
@@ -34,9 +37,10 @@ class CaseFan:
             raise ValueError(f'pin selection ({pin}) is not a PWM pin! '
                              f'({list(CaseFan._pwmpins.keys())})')
 
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(pin, GPIO.OUT)
-        GPIO.setwarnings(False)
+        if GPIO:
+            GPIO.setmode(GPIO.BCM)
+            GPIO.setup(pin, GPIO.OUT)
+            GPIO.setwarnings(False)
 
         self._pwmobj = GPIO.PWM(pin, 25000)
         self._pwmobj.start(25)
@@ -89,5 +93,6 @@ class CaseFan:
         # print(f'set fan duty cycle to {pc}')
 
     @staticmethod
-    def cleanup(self):
-        GPIO.cleanup()
+    def cleanup():
+        if GPIO is not None:
+            GPIO.cleanup()
