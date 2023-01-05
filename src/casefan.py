@@ -1,4 +1,5 @@
 import bisect
+import logging
 
 import RPi.GPIO as GPIO
 
@@ -15,6 +16,12 @@ class CaseFan:
                  name: str = None,
                  curve: dict = None):
 
+        self._logger = logging.getLogger(f"fan-{pin}")
+        self._logger.setLevel(logging.DEBUG)
+
+        handler = logging.FileHandler('$HOME/fancontrol/fans.log')
+        self._logger.addHandler(handler)
+
         if curve is None:
             curve = {0: 100,
                      100: 100}
@@ -23,6 +30,7 @@ class CaseFan:
         self._curve = curve
 
         if pin not in CaseFan._pwmpins:
+            self._logger.error(f'non PWM pin selected: {pin}')
             raise ValueError(f'pin selection ({pin}) is not a PWM pin! '
                              f'({list(CaseFan._pwmpins.keys())})')
 
@@ -32,6 +40,8 @@ class CaseFan:
 
         self._pwmobj = GPIO.PWM(pin, 25000)
         self._pwmobj.start(25)
+
+        self._logger.info(f'set up a fan on pin {pin}')
 
     @property
     def curve(self):
