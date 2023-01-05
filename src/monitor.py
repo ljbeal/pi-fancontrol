@@ -1,75 +1,84 @@
-from cmd import execcmd
+import logging
+import yaml
+from logging.handlers import RotatingFileHandler
+
+from src.casefan import CaseFan
 
 
-uuids = {'98937135-5453-9e00-0298-00d0c7740268': 'drive 1',
-         '1bccc6bb-48c9-b000-a613-8db11d2c76f4': 'drive 2'}
+class MainBoard:
+    """
+    Class to represent the thermal state of the Pi
+    """
 
+    def __init__(self, config: str = 'config.yaml'):
 
-class monitor:
+        self._logger = logging.getLogger("temps")
+        self._logger.setLevel(logging.DEBUG)
 
-    def __init__(self):
-        self._static_uuids = uuids
+        handler = RotatingFileHandler('$HOME/fancontrol/temps.log',
+                                      maxBytes=102400,
+                                      backupCount=2)
+        self._logger.addHandler(handler)
 
-        self._drive_locations = None
-        self._drive_info = {}
+        self._fans = []
+        self.create_fans(config)
 
-    @property
-    def drive_locations(self):
-        if self._drive_locations is not None:
-            return self._drive_locations
+    @staticmethod
+    def read_cpu_temp() -> float:
+        """
+        Obtain CPU temperature in Celsius as a float value by reading the temp
+        file
+        """
 
-        search, err = execcmd('blkid')
-
-        temp = {}
-        for line in search.split('\n'):
-            for uuid in self._static_uuids.keys():
-                if uuid in line:
-                    temp[self._static_uuids[uuid]] = \
-                        line.split(': UUID')[0][:-1]
-
-        return temp
-
-    def poll_drives(self):
-        for drive, loc in self.drive_locations.items():
-            cmd = f'sudo smartctl -a {loc}'
-            # print(f'issuing cmd {cmd}')
-
-            stdout, stderr = execcmd(cmd)
-
-            self._drive_info[drive] = stdout
-
-    @property
-    def drive_temps(self):
-        self.poll_drives()
-
-        temps = []
-        for drive, data in self._drive_info.items():
-            for line in data.split('\n'):
-                if line.startswith('194'):
-                    data = [sec for sec in line.split('  ') if sec != '']
-                    t = data[-1].split('(')[0].strip()
-                    temps.append(int(t))
-                    continue
-
-        return temps
-
-    @property
-    def cpu_temp(self) -> float:
         with open('/sys/class/thermal/thermal_zone0/temp', 'r') as o:
-            temp = int(o.read().strip())/1000
+            temp = float(o.read().strip())/1000
 
         return temp
 
+    def create_fans(self, config_file):
+        """
+        Creates fan objects from a yaml format config file
+
+        Files should be in the following format:
+
+        fan_name:
+            pin: (int) pwm pin that the fan is attached to
+            curve: (dict) fan curve in temp: percent format
+                10: 20
+                50: 50
+                80: 100
+        """
+        with open(config_file, 'r') as o:
+            data = yaml.safe_load(o)
+
+        for name, data in data.items():
+
+            if 'pin' not in data:
+                raise ValueError(f'"pin" attribute not found in fan {name}')
+
+            if 'curve' not in data:
+                raise ValueError(f'"curve" attribute not found in fan {name}')
+
+            self.add_fan(data['pin'], name, data['curve'])
+
+    def add_fan(self, pin, name, curve):
+        self._fans.append(CaseFan(pin, name, curve))
+
     @property
-    def maxtemp(self):
-        return max([self.cpu_temp] + self.drive_temps)
+    def fans(self):
+        return self._fans
+
+    def update(self):
+        t = self.read_cpu_temp()  # read the temp once per loop
+        for fan in self.fans:
+            fan.update(t)
+
+    def cleanup(self):
+        for fan in self.fans:
+            fan.cleanup()
 
 
 if __name__ == '__main__':
-    temp = monitor()
+    piboard = MainBoard()
 
-    print(temp.drive_locations)
-    print(f'drive temps are: {temp.drive_temps}')
-
-    print(f'CPU temp is {temp.cpu_temp}°C')
-    print(f'maxtemp is {temp.maxtemp}')
+    print(f'cpu temp reported as {piboard.read_cpu_temp}°c')

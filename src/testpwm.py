@@ -1,7 +1,7 @@
-from pwm import pwm
+from casefan import CaseFan
 
 if __name__ == '__main__':
-    fanpwm = pwm()
+    fanpwm = CaseFan(18)
 
     default = 50
 
