@@ -1,5 +1,4 @@
 import logging
-import os.path
 from logging.handlers import RotatingFileHandler
 
 from pwm import pwm
