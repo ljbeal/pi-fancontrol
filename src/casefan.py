@@ -24,7 +24,7 @@ class CaseFan:
         self._logger.setLevel(logging.DEBUG)
 
         try:
-            logfile = os.path.join(os.environ["HOME"], 'fancontrol', 'fans.log')
+            logfile = f'/home/pi/fancontrol/fans.log'
         except KeyError:
             logfile = os.path.join(os.getcwd(), 'fans.log')
 

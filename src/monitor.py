@@ -12,12 +12,12 @@ class MainBoard:
     Class to represent the thermal state of the Pi
     """
 
-    def __init__(self, config: str = 'config.yaml'):
+    def __init__(self, config: str = '/home/pi/fancontrol/config.yaml'):
 
         self._logger = logging.getLogger("temps")
         self._logger.setLevel(logging.DEBUG)
 
-        handler = RotatingFileHandler(f'{os.environ["HOME"]}/fancontrol/temps.log',
+        handler = RotatingFileHandler(f'/home/pi/fancontrol/temps.log',
                                       maxBytes=102400,
                                       backupCount=2)
         self._logger.addHandler(handler)
