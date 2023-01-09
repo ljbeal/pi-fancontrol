@@ -23,7 +23,12 @@ class CaseFan:
         self._logger = logging.getLogger(f"fan-{pin}")
         self._logger.setLevel(logging.DEBUG)
 
-        handler = logging.FileHandler(f'{os.environ["HOME"]}/fancontrol/fans.log')
+        try:
+            logfile = os.path.join(os.environ["HOME"], 'fancontrol', 'fans.log')
+        except KeyError:
+            logfile = os.path.join(os.getcwd(), 'fans.log')
+
+        handler = logging.FileHandler(logfile)
         self._logger.addHandler(handler)
 
         if curve is None:
