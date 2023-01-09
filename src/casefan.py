@@ -122,7 +122,8 @@ class CaseFan:
         if dmin > pc > dmax:
             raise ValueError(f'duty cycle must be between {dmin} and {dmax}')
 
-        self._pwmobj.ChangeDutyCycle(pc)
+        if self._pwmobj:
+            self._pwmobj.ChangeDutyCycle(pc)
         # print(f'set fan duty cycle to {pc}')
 
     @staticmethod
