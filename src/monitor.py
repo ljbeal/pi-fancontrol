@@ -73,7 +73,8 @@ class MainBoard:
     def update(self):
         t = self.read_cpu_temp()  # read the temp once per loop
         for fan in self.fans:
-            fan.update(t)
+            newpc = fan.update(t)
+            self._logger.info(f'for temperature {t}, set fan to {newpc}%')
 
     def cleanup(self):
         for fan in self.fans:
